@@ -26,6 +26,7 @@
 		D077BEF01AAA0728001F1396 /* MXSimpleViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D077BEED1AAA0728001F1396 /* MXSimpleViewController.m */; };
 		D08B319A1B0030E400B74C30 /* MXExampleViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D08B31991B0030E400B74C30 /* MXExampleViewController.m */; };
 		D0B4CEED1B0B805C004EE3AB /* MXCustomView.m in Sources */ = {isa = PBXBuildFile; fileRef = D0B4CEEC1B0B805C004EE3AB /* MXCustomView.m */; };
+		D0D5838E1B173AE900F37AE0 /* MXCustomViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D0D5838D1B173AE900F37AE0 /* MXCustomViewController.m */; };
 		D0DD86071AA35B720077F3CD /* LongText.txt in Resources */ = {isa = PBXBuildFile; fileRef = D0DD86061AA35B720077F3CD /* LongText.txt */; };
 /* End PBXBuildFile section */
 
@@ -74,6 +75,8 @@
 		D08B31991B0030E400B74C30 /* MXExampleViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MXExampleViewController.m; sourceTree = "<group>"; };
 		D0B4CEEB1B0B805C004EE3AB /* MXCustomView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MXCustomView.h; sourceTree = "<group>"; };
 		D0B4CEEC1B0B805C004EE3AB /* MXCustomView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MXCustomView.m; sourceTree = "<group>"; };
+		D0D5838C1B173AE900F37AE0 /* MXCustomViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MXCustomViewController.h; sourceTree = "<group>"; };
+		D0D5838D1B173AE900F37AE0 /* MXCustomViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MXCustomViewController.m; sourceTree = "<group>"; };
 		D0DD86061AA35B720077F3CD /* LongText.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LongText.txt; sourceTree = "<group>"; };
 		DFC056F91C12A3D9A99247EE /* Pods-Tests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Tests.release.xcconfig"; path = "Pods/Target Support Files/Pods-Tests/Pods-Tests.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -155,6 +158,8 @@
 				6003F5A8195388D20070C39A /* Images.xcassets */,
 				6003F594195388D20070C39A /* Supporting Files */,
 				D0DD86061AA35B720077F3CD /* LongText.txt */,
+				D0D5838C1B173AE900F37AE0 /* MXCustomViewController.h */,
+				D0D5838D1B173AE900F37AE0 /* MXCustomViewController.m */,
 			);
 			path = MXSegmentedPager;
 			sourceTree = "<group>";
@@ -381,6 +386,7 @@
 				D0B4CEED1B0B805C004EE3AB /* MXCustomView.m in Sources */,
 				D02CC1BD1AB0EF7A00492C51 /* MXParallaxViewController.m in Sources */,
 				D077BEF01AAA0728001F1396 /* MXSimpleViewController.m in Sources */,
+				D0D5838E1B173AE900F37AE0 /* MXCustomViewController.m in Sources */,
 				D08B319A1B0030E400B74C30 /* MXExampleViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

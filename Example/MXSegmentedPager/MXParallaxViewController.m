@@ -7,7 +7,7 @@
 //
 
 #import "MXParallaxViewController.h"
-#import "MXSegmentedPager+ParallaxHeader.h"
+#import "MXSegmentedPager.h"
 #import "MXCustomView.h"
 
 @interface MXParallaxViewController () <MXSegmentedPagerDelegate, MXSegmentedPagerDataSource, UITableViewDelegate, UITableViewDataSource>
