@@ -1,21 +1,21 @@
 // MXSegmentedPager.m
 //
-// Copyright (c) 2015 Maxime Epain
+// CopyLeading (c) 2015 Maxime Epain
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
+// in the Software without restriction, including without limitation the Leadings
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in
+// The above copyLeading notice and this permission notice shall be included in
 // all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// AUTHORS OR COPYLeading HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
@@ -25,8 +25,8 @@
 
 typedef NS_ENUM(NSInteger, MXPanGestureDirection) {
     MXPanGestureDirectionNone  = 1 << 0,
-    MXPanGestureDirectionRight = 1 << 1,
-    MXPanGestureDirectionLeft  = 1 << 2,
+    MXPanGestureDirectionLeading = 1 << 1,
+    MXPanGestureDirectionTrailing  = 1 << 2,
     MXPanGestureDirectionUp    = 1 << 3,
     MXPanGestureDirectionDown  = 1 << 4
 };
@@ -51,11 +51,12 @@ typedef NS_ENUM(NSInteger, MXPanGestureDirection) {
 
 // Constraints
 @property (nonatomic, strong) NSLayoutConstraint *controlTopConstraint;
-@property (nonatomic, strong) NSLayoutConstraint *controlLeftConstraint;
-@property (nonatomic, strong) NSLayoutConstraint *controlRightConstraint;
+@property (nonatomic, strong) NSLayoutConstraint *controlTrailingConstraint;
+@property (nonatomic, strong) NSLayoutConstraint *controlLeadingConstraint;
 @property (nonatomic, strong) NSLayoutConstraint *controlHeightConstraint;
 
 @property (nonatomic, strong) NSLayoutConstraint *pagerTopConstraint;
+@property (nonatomic, strong) NSLayoutConstraint *pagerHeightConstraint;
 
 @property (nonatomic, strong) NSLayoutConstraint *contentBottomConstraint;
 
@@ -67,6 +68,7 @@ typedef NS_ENUM(NSInteger, MXPanGestureDirection) {
 
 - (void)layoutSubviews {
     [super layoutSubviews];
+    
     [self reloadData];
     [self.pager reloadData];
     [self layoutIfNeeded];
@@ -80,9 +82,10 @@ typedef NS_ENUM(NSInteger, MXPanGestureDirection) {
         height = [self.delegate heightForSegmentedControlInSegmentedPager:self];
     }
     
-    [self layoutWithHeight:height];
-    
-    self.count = [self.dataSource numberOfPagesInSegmentedPager:self];
+    self.count = 1;
+    if ([self.dataSource respondsToSelector:@selector(numberOfPagesInSegmentedPager:)]) {
+        self.count = [self.dataSource numberOfPagesInSegmentedPager:self];
+    }
     
     //Gets new data
     NSMutableArray* images  = [NSMutableArray array];
@@ -108,6 +111,8 @@ typedef NS_ENUM(NSInteger, MXPanGestureDirection) {
     else {
         self.segmentedControl.sectionTitles = titles;
     }
+    
+    [self.contentView layoutIfNeeded];
 }
 
 - (void) scrollToPageAtIndex:(NSInteger)index animated:(BOOL)animated {
@@ -125,7 +130,9 @@ typedef NS_ENUM(NSInteger, MXPanGestureDirection) {
         _contentView.segmentedPager = self;
         _contentView.scrollEnabled = NO;
         [self addSubview:_contentView];
-//        [self updateContentViewConstraints];
+        
+        self.contentView.translatesAutoresizingMaskIntoConstraints = NO;
+        [self updatecontentViewConstraints];
     }
     return _contentView;
 }
@@ -139,7 +146,9 @@ typedef NS_ENUM(NSInteger, MXPanGestureDirection) {
         [self.contentView addSubview:_segmentedControl];
         
         self.segmentedControlEdgeInsets = UIEdgeInsetsMake(0, 0, 0, 0);
-//        [self updateSegmentedControlConstraints];
+        
+        self.segmentedControl.translatesAutoresizingMaskIntoConstraints = NO;
+        [self updateSegmentedControlConstraints];
         
         _moveSegment = YES;
     }
@@ -152,18 +161,15 @@ typedef NS_ENUM(NSInteger, MXPanGestureDirection) {
         _pager.delegate = self;
         _pager.dataSource = self;
         [self.contentView addSubview:_pager];
-//        [self updatePagerConstraints];
+        
+        self.pager.translatesAutoresizingMaskIntoConstraints = NO;
+        [self updatePagerConstraints];
     }
     return _pager;
 }
 
 - (UIView*) selectedPage {
     return self.pager.selectedPage;
-}
-
-- (void)setSegmentedControlPosition:(MXSegmentedControlPosition)segmentedControlPosition {
-    _segmentedControlPosition = segmentedControlPosition;
-    [self layoutWithHeight:self.segmentedControl.frame.size.height];
 }
 
 - (void)setSegmentedControlEdgeInsets:(UIEdgeInsets)segmentedControlEdgeInsets {
@@ -173,112 +179,109 @@ typedef NS_ENUM(NSInteger, MXPanGestureDirection) {
 
 #pragma Constraints
 
-- (void) updateContentViewConstraints {
-    self.contentView.translatesAutoresizingMaskIntoConstraints = NO;
+- (void) updatecontentViewConstraints {
     
-    [self addConstraint:[NSLayoutConstraint constraintWithItem:self.contentView
-                                                     attribute:NSLayoutAttributeLeft
-                                                     relatedBy:NSLayoutRelationEqual
-                                                        toItem:self
-                                                     attribute:NSLayoutAttributeLeft
-                                                    multiplier:1
-                                                      constant:0]];
+    [self addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[v]|"
+                                                                 options:0
+                                                                 metrics:nil
+                                                                   views:@{@"v" : self.contentView}]];
     
-    [self addConstraint:[NSLayoutConstraint constraintWithItem:self.contentView
-                                                     attribute:NSLayoutAttributeRight
-                                                     relatedBy:NSLayoutRelationEqual
-                                                        toItem:self
-                                                     attribute:NSLayoutAttributeRight
-                                                    multiplier:1
-                                                      constant:0]];
+    [self addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[v]|"
+                                                                 options:0
+                                                                 metrics:nil
+                                                                   views:@{@"v" : self.contentView}]];
     
-    [self addConstraint:[NSLayoutConstraint constraintWithItem:self.contentView
-                                                     attribute:NSLayoutAttributeTop
-                                                     relatedBy:NSLayoutRelationEqual
-                                                        toItem:self
-                                                     attribute:NSLayoutAttributeTop
-                                                    multiplier:1
-                                                      constant:0]];
+//    [self addConstraint:[NSLayoutConstraint constraintWithItem:self.contentView
+//                                                     attribute:NSLayoutAttributeTop
+//                                                     relatedBy:NSLayoutRelationEqual
+//                                                        toItem:self
+//                                                     attribute:NSLayoutAttributeTop
+//                                                    multiplier:1
+//                                                      constant:0]];
     
-    [self addConstraint:self.contentBottomConstraint];
+//    [self addConstraint:self.contentBottomConstraint];
 }
 
 - (void) updateSegmentedControlConstraints {
-    self.segmentedControl.translatesAutoresizingMaskIntoConstraints = NO;
+
     [self.contentView addConstraint:self.controlTopConstraint];
-    [self.contentView addConstraint:self.controlLeftConstraint];
-    [self.contentView addConstraint:self.controlRightConstraint];
+    [self.contentView addConstraint:self.controlTrailingConstraint];
+    [self.contentView addConstraint:self.controlLeadingConstraint];
     [self.contentView addConstraint:self.controlHeightConstraint];
+    
+    [self.contentView addConstraint:[NSLayoutConstraint constraintWithItem:self.segmentedControl
+                                                                 attribute:NSLayoutAttributeCenterX
+                                                                 relatedBy:NSLayoutRelationEqual
+                                                                    toItem:self.contentView
+                                                                 attribute:NSLayoutAttributeCenterX
+                                                                multiplier:1
+                                                                  constant:0]];
 }
 
 - (void)updatePagerConstraints {
-    self.pager.translatesAutoresizingMaskIntoConstraints = NO;
     
     [self.contentView addConstraint:self.pagerTopConstraint];
     
-    [self.contentView addConstraint:[NSLayoutConstraint constraintWithItem:self.pager
-                                                     attribute:NSLayoutAttributeLeft
-                                                     relatedBy:NSLayoutRelationEqual
-                                                        toItem:self.contentView
-                                                     attribute:NSLayoutAttributeLeft
-                                                    multiplier:1
-                                                      constant:0]];
+    [self.contentView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[v]|"
+                                                                             options:0
+                                                                             metrics:nil
+                                                                               views:@{@"v" : self.pager}]];
+//    
+//    [self.contentView addConstraint:[NSLayoutConstraint constraintWithItem:self.pager
+//                                                                 attribute:NSLayoutAttributeBottom
+//                                                                 relatedBy:NSLayoutRelationEqual
+//                                                                    toItem:self.contentView
+//                                                                 attribute:NSLayoutAttributeBottom
+//                                                                multiplier:1
+//                                                                  constant:0]];
     
     [self.contentView addConstraint:[NSLayoutConstraint constraintWithItem:self.pager
-                                                     attribute:NSLayoutAttributeRight
-                                                     relatedBy:NSLayoutRelationEqual
-                                                        toItem:self.contentView
-                                                     attribute:NSLayoutAttributeRight
-                                                    multiplier:1
-                                                      constant:0]];
-    
-    [self.contentView addConstraint:[NSLayoutConstraint constraintWithItem:self.pager
-                                                     attribute:NSLayoutAttributeBottom
-                                                     relatedBy:NSLayoutRelationEqual
-                                                        toItem:self.contentView
-                                                     attribute:NSLayoutAttributeBottom
-                                                    multiplier:1
-                                                      constant:0]];
+                                                                 attribute:NSLayoutAttributeCenterX
+                                                                 relatedBy:NSLayoutRelationEqual
+                                                                    toItem:self.contentView
+                                                                 attribute:NSLayoutAttributeCenterX
+                                                                multiplier:1
+                                                                  constant:0]];
+    [self.contentView addConstraint:self.pagerHeightConstraint];
 }
 
 - (NSLayoutConstraint *)controlTopConstraint {
     if (!_controlTopConstraint) {
         _controlTopConstraint = [NSLayoutConstraint constraintWithItem:self.segmentedControl
-                                                              attribute:NSLayoutAttributeTop
-                                                              relatedBy:NSLayoutRelationEqual
-                                                                 toItem:self.contentView
-                                                              attribute:NSLayoutAttributeTop
-                                                             multiplier:1
-                                                               constant:self.segmentedControlEdgeInsets.top];
+                                                             attribute:NSLayoutAttributeTop
+                                                             relatedBy:NSLayoutRelationEqual
+                                                                toItem:self.contentView
+                                                             attribute:NSLayoutAttributeTop
+                                                            multiplier:1
+                                                              constant:self.segmentedControlEdgeInsets.top];
     }
     return _controlTopConstraint;
 }
 
-- (NSLayoutConstraint *)controlLeftConstraint {
-    if (!_controlLeftConstraint) {
-        _controlLeftConstraint = [NSLayoutConstraint constraintWithItem:self.segmentedControl
-                                                              attribute:NSLayoutAttributeLeft
+- (NSLayoutConstraint *)controlTrailingConstraint {
+    if (!_controlTrailingConstraint) {
+        _controlTrailingConstraint = [NSLayoutConstraint constraintWithItem:self.segmentedControl
+                                                              attribute:NSLayoutAttributeTrailing
                                                               relatedBy:NSLayoutRelationEqual
                                                                  toItem:self.contentView
-                                                              attribute:NSLayoutAttributeLeft
+                                                              attribute:NSLayoutAttributeTrailing
                                                              multiplier:1
                                                                constant:self.segmentedControlEdgeInsets.left];
     }
-    return _controlLeftConstraint;
+    return _controlTrailingConstraint;
 }
 
-- (NSLayoutConstraint *)controlRightConstraint {
-    if (!_controlRightConstraint) {
-        _controlRightConstraint = [NSLayoutConstraint constraintWithItem:self.segmentedControl
-                                                              attribute:NSLayoutAttributeRight
+- (NSLayoutConstraint *)controlLeadingConstraint {
+    if (!_controlLeadingConstraint) {
+        _controlLeadingConstraint = [NSLayoutConstraint constraintWithItem:self.segmentedControl
+                                                              attribute:NSLayoutAttributeLeading
                                                               relatedBy:NSLayoutRelationEqual
                                                                  toItem:self.contentView
-                                                              attribute:NSLayoutAttributeRight
+                                                              attribute:NSLayoutAttributeLeading
                                                              multiplier:1
                                                                constant:self.segmentedControlEdgeInsets.right];
-        
     }
-    return _controlRightConstraint;
+    return _controlLeadingConstraint;
 }
 
 - (NSLayoutConstraint *)controlHeightConstraint {
@@ -302,10 +305,22 @@ typedef NS_ENUM(NSInteger, MXPanGestureDirection) {
                                                               toItem:self.segmentedControl
                                                            attribute:NSLayoutAttributeBottom
                                                           multiplier:1
-                                                            constant:0];
-        
+                                                            constant:self.segmentedControlEdgeInsets.bottom];
     }
     return _pagerTopConstraint;
+}
+
+- (NSLayoutConstraint *)pagerHeightConstraint {
+    if (!_pagerHeightConstraint) {
+        _pagerHeightConstraint = [NSLayoutConstraint constraintWithItem:self.pager
+                                                                attribute:NSLayoutAttributeHeight
+                                                                relatedBy:NSLayoutRelationEqual
+                                                                   toItem:self.contentView
+                                                                attribute:NSLayoutAttributeHeight
+                                                               multiplier:1
+                                                                 constant:-44.f];
+    }
+    return _pagerHeightConstraint;
 }
 
 - (NSLayoutConstraint *)contentBottomConstraint {
@@ -316,8 +331,7 @@ typedef NS_ENUM(NSInteger, MXPanGestureDirection) {
                                                                   toItem:self
                                                                attribute:NSLayoutAttributeBottom
                                                               multiplier:1
-                                                                constant:self.segmentedControlEdgeInsets.bottom];
-        
+                                                                constant:0];
     }
     return _contentBottomConstraint;
 }
@@ -372,47 +386,6 @@ typedef NS_ENUM(NSInteger, MXPanGestureDirection) {
     }
 }
 
-- (void) layoutWithHeight:(CGFloat)height {
-    
-    CGPoint position;
-    if (self.segmentedControlPosition == MXSegmentedControlPositionTop) {
-        position = CGPointMake(self.segmentedControlEdgeInsets.left,
-                               self.segmentedControlEdgeInsets.top);
-    }
-    else {
-        position = CGPointMake(self.segmentedControlEdgeInsets.left,
-                               self.frame.size.height - height - self.segmentedControlEdgeInsets.bottom);
-    }
-    
-    CGRect subFrame = (CGRect) {
-        .origin         = position,
-        .size.width     = self.frame.size.width - self.segmentedControlEdgeInsets.left - self.segmentedControlEdgeInsets.right,
-        .size.height    = height
-    };
-    self.segmentedControl.frame = subFrame;
-    
-    if (self.segmentedControlPosition == MXSegmentedControlPositionTop) {
-        position = CGPointMake(0, height + self.segmentedControlEdgeInsets.top + self.segmentedControlEdgeInsets.bottom);
-    }
-    else {
-        position = CGPointZero;
-    }
-    
-    height = self.contentView.frame.size.height - height;
-    height -= self.contentView.minimumHeigth;
-    height -= self.segmentedControlEdgeInsets.top;
-    height -=self.segmentedControlEdgeInsets.bottom;
-    
-    subFrame = (CGRect) {
-        .origin         = position,
-        .size.width     = self.frame.size.width,
-        .size.height    = height
-    };
-    self.pager.frame = subFrame;
-    
-    self.contentView.contentSize = CGSizeMake(self.contentView.frame.size.width, self.contentView.frame.size.height);
-}
-
 @end
 
 @implementation MXSegmentedPager (ParallaxHeader)
@@ -465,18 +438,13 @@ static NSString* const kContentOffsetKeyPath = @"contentOffset";
         self.directionalLockEnabled = YES;
         self.bounces = YES;
         self.autoresizingMask = (UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight);
-        self.contentMode = UIViewContentModeTopRight;
+        self.contentMode = UIViewContentModeTopLeft;
         self.minimumHeigth = 0;
     }
     return self;
 }
 
 #pragma mark Properties
-
-- (void)setFrame:(CGRect)frame {
-    [super setFrame:frame];
-    self.contentSize = frame.size;
-}
 
 - (NSMutableArray *)observedViews {
     if (!_observedViews) {
@@ -503,7 +471,7 @@ static NSString* const kContentOffsetKeyPath = @"contentOffset";
 
 #pragma mark <UIScrollViewDelegate>
 
-- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
+- (void)contentViewDidScroll:(UIScrollView *)scrollView {
     
     if ((self.contentOffset.y >= -self.minimumHeigth)) {
         self.contentOffset = CGPointMake(self.contentOffset.x, -self.minimumHeigth);
@@ -516,7 +484,7 @@ static NSString* const kContentOffsetKeyPath = @"contentOffset";
     }
 }
 
-- (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView {
+- (void)contentViewDidEndDecelerating:(UIScrollView *)scrollView {
     _lock = NO;
     [self removeObservedViews];
 }
@@ -528,7 +496,7 @@ static NSString* const kContentOffsetKeyPath = @"contentOffset";
     if ([gestureRecognizer isKindOfClass:[UIPanGestureRecognizer class]]) {
         MXPanGestureDirection direction = [self getDirectionOfPanGestureRecognizer:(UIPanGestureRecognizer*)gestureRecognizer];
         
-        if (direction == MXPanGestureDirectionLeft || direction == MXPanGestureDirectionRight) {
+        if (direction == MXPanGestureDirectionTrailing || direction == MXPanGestureDirectionLeading) {
             return NO;
         }
     }
@@ -557,7 +525,7 @@ static NSString* const kContentOffsetKeyPath = @"contentOffset";
     CGFloat absY = fabs(velocity.y);
     
     if (absX > absY) {
-        return (velocity.x > 0)? MXPanGestureDirectionRight : MXPanGestureDirectionLeft;
+        return (velocity.x > 0)? MXPanGestureDirectionLeading : MXPanGestureDirectionTrailing;
     }
     else if (absX < absY) {
         return (velocity.y > 0)? MXPanGestureDirectionDown : MXPanGestureDirectionUp;
@@ -602,22 +570,22 @@ static NSString* const kContentOffsetKeyPath = @"contentOffset";
         if (_isObserving && object == self) {
             //Adjust self scroll offset
             if ((old.y - new.y) > 0 && _lock) {
-                [self scrollView:self setContentOffset:old];
+                [self contentView:self setContentOffset:old];
             }
         }
-        else if (_isObserving && [object isKindOfClass:[UIScrollView class]]) {
+        else if (_isObserving && [object isKindOfClass:[MXScrollView class]]) {
             
-            //Adjust the observed scrollview's content offset
-            UIScrollView *scrollView = object;
+            //Adjust the observed contentView's content offset
+            MXScrollView *scrollView = object;
             _lock = !(scrollView.contentOffset.y <= -scrollView.contentInset.top);
             
             //Manage scroll up
             if (self.contentOffset.y < -self.minimumHeigth && _lock && (old.y - new.y) < 0) {
-                [self scrollView:scrollView setContentOffset:old];
+                [self contentView:scrollView setContentOffset:old];
             }
             //Disable bouncing when scroll down
             if (!_lock) {
-                [self scrollView:scrollView setContentOffset:CGPointMake(scrollView.contentOffset.x, -scrollView.contentInset.top)];
+                [self contentView:scrollView setContentOffset:CGPointMake(scrollView.contentOffset.x, -scrollView.contentInset.top)];
             }
         }
     }
@@ -642,9 +610,9 @@ static NSString* const kContentOffsetKeyPath = @"contentOffset";
     [self.observedViews removeAllObjects];
 }
 
-- (void) scrollView:(UIScrollView*)scrollView setContentOffset:(CGPoint)offset {
+- (void) contentView:(UIScrollView*)contentView setContentOffset:(CGPoint)offset {
     _isObserving = NO;
-    scrollView.contentOffset = offset;
+    contentView.contentOffset = offset;
     _isObserving = YES;
 }
 

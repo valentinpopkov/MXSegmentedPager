@@ -178,7 +178,7 @@ typedef void (^MXProgressBlock) (CGFloat progress);
 - (void) reloadData;
 
 /**
- Scrolls through the container view until a page identified by index is at a particular location on the screen.
+ Scrolls through the pager view until a page identified by index is at a particular location on the screen.
  
  @param index       An index that identifies a page.
  @param animated    YES if you want to animate the change in position; NO if it should be immediate.
@@ -220,7 +220,7 @@ typedef void (^MXProgressBlock) (CGFloat progress);
 @end
 
 /**
- While using MXSegmentedPager with Parallax header, your pages can adopt the MXPageDelegate protocol to control subview's scrolling effect.
+ While using MXSegmentedPager with Parallax header, your pages can adopt the MXPageProtocol protocol to control subview's scrolling effect.
  */
 @protocol MXPageProtocol <NSObject>
 
