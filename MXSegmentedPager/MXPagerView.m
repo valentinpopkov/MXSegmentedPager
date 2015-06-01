@@ -40,6 +40,8 @@
 @end
 
 @interface MXPagerView ()
+@property (nonatomic, strong) UIView *contentView;
+@property (nonatomic, strong) NSLayoutConstraint *contentWidthConstraint;
 @property (nonatomic, strong) NSMutableDictionary *pages;
 @property (nonatomic, assign) NSInteger index;
 @property (nonatomic, assign) NSInteger count;
@@ -80,14 +82,9 @@ static void * const kMXPagerViewKVOContext = (void*)&kMXPagerViewKVOContext;
     return self;
 }
 
-//- (void)setFrame:(CGRect)frame {
-//    [super setFrame:frame];
-//    [self reloadData];
-//}
-
 - (void)layoutIfNeeded {
-    [super layoutIfNeeded];
     [self reloadData];
+    [super layoutIfNeeded];
 }
 
 - (void) reloadData {
@@ -107,7 +104,7 @@ static void * const kMXPagerViewKVOContext = (void*)&kMXPagerViewKVOContext;
     //Loads the current selected page
     [self loadPageAtIndex:self.index];
     
-    self.contentSize = CGSizeMake(self.bounds.size.width * self.count, self.bounds.size.height);
+//    self.contentSize = CGSizeMake(self.bounds.size.width * self.count, self.bounds.size.height);
 }
 
 - (void) showPageAtIndex:(NSInteger)index animated:(BOOL)animated {
@@ -161,6 +158,16 @@ static void * const kMXPagerViewKVOContext = (void*)&kMXPagerViewKVOContext;
 
 #pragma mark Properties
 
+- (UIView *)contentView {
+    if (!_contentView) {
+        _contentView = [[UIView alloc] init];
+        [self addSubview:_contentView];
+        
+        [self updateContentVewConstraint];
+    }
+    return _contentView;
+}
+
 - (void)setIndex:(NSInteger)index {
     _index = index;
     
@@ -170,6 +177,14 @@ static void * const kMXPagerViewKVOContext = (void*)&kMXPagerViewKVOContext;
     
     //The page did change, now unload hidden pages
     [self unLoadHiddenPages];
+}
+
+- (void)setCount:(NSInteger)count {
+    _count = count;
+    
+    [self removeConstraint:self.contentWidthConstraint];
+    self.contentWidthConstraint = nil;
+    [self addConstraint:self.contentWidthConstraint];
 }
 
 - (NSMutableDictionary *)pages {
@@ -202,6 +217,54 @@ static void * const kMXPagerViewKVOContext = (void*)&kMXPagerViewKVOContext;
         _reuseQueue = [NSMutableArray array];
     }
     return _reuseQueue;
+}
+
+#pragma Content constraints
+
+- (void) updateContentVewConstraint {
+    self.contentView.translatesAutoresizingMaskIntoConstraints = NO;
+    
+    [self addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[v]|"
+                                                                 options:0
+                                                                 metrics:nil
+                                                                   views:@{@"v" : self.contentView}]];
+    
+    [self addConstraint:[NSLayoutConstraint constraintWithItem:self.contentView
+                                                     attribute:NSLayoutAttributeCenterY
+                                                     relatedBy:NSLayoutRelationEqual
+                                                        toItem:self
+                                                     attribute:NSLayoutAttributeCenterY
+                                                    multiplier:1
+                                                      constant:0]];
+    
+    [self addConstraint:[NSLayoutConstraint constraintWithItem:self.contentView
+                                                     attribute:NSLayoutAttributeLeading
+                                                     relatedBy:NSLayoutRelationEqual
+                                                        toItem:self
+                                                     attribute:NSLayoutAttributeLeading
+                                                    multiplier:1
+                                                      constant:0]];
+    
+    [self addConstraint:[NSLayoutConstraint constraintWithItem:self.contentView
+                                                     attribute:NSLayoutAttributeTrailing
+                                                     relatedBy:NSLayoutRelationEqual
+                                                        toItem:self
+                                                     attribute:NSLayoutAttributeTrailing
+                                                    multiplier:1
+                                                      constant:0]];
+}
+
+- (NSLayoutConstraint *)contentWidthConstraint {
+    if (!_contentWidthConstraint) {
+        _contentWidthConstraint = [NSLayoutConstraint constraintWithItem:self.contentView
+                                                               attribute:NSLayoutAttributeWidth
+                                                               relatedBy:NSLayoutRelationEqual
+                                                                  toItem:self
+                                                               attribute:NSLayoutAttributeWidth
+                                                              multiplier:self.count
+                                                                constant:0];
+    }
+    return _contentWidthConstraint;
 }
 
 #pragma Private Methods
@@ -254,7 +317,7 @@ static void * const kMXPagerViewKVOContext = (void*)&kMXPagerViewKVOContext;
                     .origin.y   = 0.f,
                     .size       = self.bounds.size
                 };
-                [self addSubview:page];
+                [self.contentView addSubview:page];
                 [self.pages setObject:page forKey:key];
             }
         }
