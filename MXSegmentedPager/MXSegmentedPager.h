@@ -74,15 +74,6 @@ typedef void (^MXProgressBlock) (CGFloat progress);
  */
 - (void) segmentedPager:(MXSegmentedPager*)segmentedPager didSelectViewWithIndex:(NSInteger)index;
 
-/**
- Asks the delegate to return the height of the segmented control in the segmented-pager.
- 
- @param segmentedPager A segmented-pager object informing the delegate about the impending selection.
- 
- @return A nonnegative floating-point value that specifies the height (in points) that segmented-control should be.
- */
-- (CGFloat) heightForSegmentedControlInSegmentedPager:(MXSegmentedPager*)segmentedPager;
-
 @end
 
 /**
@@ -158,6 +149,16 @@ typedef void (^MXProgressBlock) (CGFloat progress);
 @property (nonatomic, readonly) HMSegmentedControl* segmentedControl;
 
 /**
+ The segmented-control height.
+ */
+@property (nonatomic, assign) CGFloat segmentedControlHeight;
+
+/**
+ The padding from the top, left, right, and bottom of the segmented-control.
+ */
+@property (nonatomic, assign) UIEdgeInsets segmentedControlEdgeInsets;
+
+/**
  The segmented control position option.
  */
 @property (nonatomic, assign) MXSegmentedControlPosition segmentedControlPosition;
@@ -166,11 +167,6 @@ typedef void (^MXProgressBlock) (CGFloat progress);
  The pager. The pager will be placed below the segmented control.
  */
 @property (nonatomic, readonly) MXPagerView* pager;
-
-/**
- The padding from the top, left, right, and bottom of the segmentedControl
- */
-@property (nonatomic, assign) UIEdgeInsets segmentedControlEdgeInsets;
 
 /**
  Reloads everything from scratch. redisplays pages.

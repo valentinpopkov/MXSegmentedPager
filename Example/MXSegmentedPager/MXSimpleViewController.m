@@ -32,13 +32,11 @@
 
 @implementation MXSimpleViewController
 
-- (void)loadView {
-    self.view = self.segmentedPager;
-}
-
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.view.backgroundColor = UIColor.whiteColor;
+    
+    [self.view addSubview:self.segmentedPager];
     
     self.segmentedPager.segmentedControl.selectionIndicatorLocation = HMSegmentedControlSelectionIndicatorLocationDown;
     self.segmentedPager.segmentedControl.selectionIndicatorColor = [UIColor orangeColor];
@@ -48,27 +46,17 @@
     //Register UItableView as page
     [self.segmentedPager.pager registerClass:[UITextView class] forPageReuseIdentifier:@"TextPage"];
     
-//    NSDictionary * views = @{@"v" : self.segmentedPager};
-//    self.segmentedPager.translatesAutoresizingMaskIntoConstraints = NO;
-//    [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[v]|"
-//                                                                           options:0
-//                                                                           metrics:nil
-//                                                                             views:views]];
-//    [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|-(20)-[v]|"
-//                                                                      options:0
-//                                                                      metrics:nil
-//                                                                        views:views]];
+    NSDictionary * views = @{@"v" : self.segmentedPager};
+    self.segmentedPager.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[v]|"
+                                                                           options:0
+                                                                           metrics:nil
+                                                                             views:views]];
+    [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|-(20)-[v]|"
+                                                                      options:0
+                                                                      metrics:nil
+                                                                        views:views]];
 }
-
-//- (void)viewWillLayoutSubviews {
-//    self.segmentedPager.frame = (CGRect){
-//        .origin.x       = 0.f,
-//        .origin.y       = 20.f,
-//        .size.width     = self.view.frame.size.width,
-//        .size.height    = self.view.frame.size.height - 20.f
-//    };
-//    [super viewWillLayoutSubviews];
-//}
 
 #pragma -mark Properties
 

@@ -29,7 +29,7 @@
     
     [self.segmentedPager setParallaxHeaderView:self.cover mode:VGParallaxHeaderModeFill height:150.f];
     
-    self.segmentedPager.minimumHeaderHeight = 20.f;
+    self.segmentedPager.minimumHeaderHeight = 64.f;
     
     self.segmentedPager.segmentedControl.selectionIndicatorLocation = HMSegmentedControlSelectionIndicatorLocationDown;
     self.segmentedPager.segmentedControl.backgroundColor = [UIColor whiteColor];
@@ -38,15 +38,19 @@
     self.segmentedPager.segmentedControl.selectionStyle = HMSegmentedControlSelectionStyleFullWidthStripe;
     self.segmentedPager.segmentedControl.selectionIndicatorColor = [UIColor orangeColor];
     
+    self.segmentedPager.segmentedControlHeight = 30.f;
     self.segmentedPager.segmentedControlEdgeInsets = UIEdgeInsetsMake(12, 12, 12, 12);
-}
-
-- (void)viewWillLayoutSubviews {
-    self.segmentedPager.frame = (CGRect){
-        .origin = CGPointZero,
-        .size   = self.view.frame.size
-    };
-    [super viewWillLayoutSubviews];
+    
+    NSDictionary * views = @{@"v" : self.segmentedPager};
+    self.segmentedPager.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[v]|"
+                                                                      options:0
+                                                                      metrics:nil
+                                                                        views:views]];
+    [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[v]|"
+                                                                      options:0
+                                                                      metrics:nil
+                                                                        views:views]];
 }
 
 #pragma -mark private methods
@@ -111,17 +115,13 @@
     return _customView;
 }
 
-#pragma -mark <MXSegmentedPagerDelegate>
-
-- (CGFloat)heightForSegmentedControlInSegmentedPager:(MXSegmentedPager *)segmentedPager {
-    return 30.f;
-}
+#pragma mark <MXSegmentedPagerDelegate>
 
 - (void)segmentedPager:(MXSegmentedPager *)segmentedPager didSelectViewWithTitle:(NSString *)title {
     NSLog(@"%@ page selected.", title);
 }
 
-#pragma -mark <MXSegmentedPagerDataSource>
+#pragma mark <MXSegmentedPagerDataSource>
 
 - (NSInteger)numberOfPagesInSegmentedPager:(MXSegmentedPager *)segmentedPager {
     return 4;
@@ -143,7 +143,7 @@
     [self.segmentedPager scrollToPageAtIndex:index animated:YES];
 }
 
-#pragma -mark <UITableViewDataSource>
+#pragma mark <UITableViewDataSource>
 
 - (NSInteger) tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     return 50;

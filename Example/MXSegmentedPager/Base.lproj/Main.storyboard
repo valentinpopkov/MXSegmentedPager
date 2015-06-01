@@ -5,18 +5,10 @@
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="7703"/>
     </dependencies>
     <scenes>
-        <!--Simple View Controller-->
-        <scene sceneID="7Bm-N7-prY">
-            <objects>
-                <viewController id="fKy-it-bbw" customClass="MXSimpleViewController" sceneMemberID="viewController"/>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="cZC-i2-9ej" userLabel="First Responder" sceneMemberID="firstResponder"/>
-            </objects>
-            <point key="canvasLocation" x="487" y="353"/>
-        </scene>
-        <!--Simple View Controller-->
+        <!--Parallax View Controller-->
         <scene sceneID="Crr-va-awX">
             <objects>
-                <viewController id="5kW-UJ-8eW" customClass="MXSimpleViewController" sceneMemberID="viewController">
+                <viewController id="5kW-UJ-8eW" customClass="MXParallaxViewController" sceneMemberID="viewController">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="u8h-I1-qq1"/>
                         <viewControllerLayoutGuide type="bottom" id="Rp1-4o-aEG"/>

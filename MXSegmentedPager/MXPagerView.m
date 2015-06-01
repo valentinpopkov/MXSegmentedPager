@@ -80,8 +80,13 @@ static void * const kMXPagerViewKVOContext = (void*)&kMXPagerViewKVOContext;
     return self;
 }
 
-- (void)setFrame:(CGRect)frame {
-    [super setFrame:frame];
+//- (void)setFrame:(CGRect)frame {
+//    [super setFrame:frame];
+//    [self reloadData];
+//}
+
+- (void)layoutIfNeeded {
+    [super layoutIfNeeded];
     [self reloadData];
 }
 

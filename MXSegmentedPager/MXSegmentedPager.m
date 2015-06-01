@@ -24,11 +24,11 @@
 #import "MXSegmentedPager.h"
 
 typedef NS_ENUM(NSInteger, MXPanGestureDirection) {
-    MXPanGestureDirectionNone  = 1 << 0,
-    MXPanGestureDirectionLeading = 1 << 1,
-    MXPanGestureDirectionTrailing  = 1 << 2,
-    MXPanGestureDirectionUp    = 1 << 3,
-    MXPanGestureDirectionDown  = 1 << 4
+    MXPanGestureDirectionNone       = 1 << 0,
+    MXPanGestureDirectionLeading    = 1 << 1,
+    MXPanGestureDirectionTrailing   = 1 << 2,
+    MXPanGestureDirectionUp         = 1 << 3,
+    MXPanGestureDirectionDown       = 1 << 4
 };
 
 @interface MXScrollView : UIScrollView <UIScrollViewDelegate, UIGestureRecognizerDelegate>
@@ -66,33 +66,21 @@ typedef NS_ENUM(NSInteger, MXPanGestureDirection) {
 
 @end
 
-@interface MXScrollView (Constraints)
-
-
-
-@end
-
 @implementation MXSegmentedPager {
     BOOL _moveSegment;
 }
 
+@synthesize segmentedControlHeight = _segmentedControlHeight;
+
 - (void)layoutSubviews {
     [super layoutSubviews];
-    
     [self reloadData];
-    [self.pager reloadData];
-    [self layoutIfNeeded];
+    
+    [self.contentView layoutIfNeeded];
+    [self.pager layoutIfNeeded];
 }
 
 - (void)reloadData {
-    
-    //Gets the segmented control height
-    CGFloat height = 44.f;
-    if ([self.delegate respondsToSelector:@selector(heightForSegmentedControlInSegmentedPager:)]) {
-        height = [self.delegate heightForSegmentedControlInSegmentedPager:self];
-    }
-    self.controlHeightConstraint.constant = height;
-    self.pagerCenterYConstraint.constant = height / 2;
     
     self.count = 1;
     if ([self.dataSource respondsToSelector:@selector(numberOfPagesInSegmentedPager:)]) {
@@ -123,8 +111,6 @@ typedef NS_ENUM(NSInteger, MXPanGestureDirection) {
     else {
         self.segmentedControl.sectionTitles = titles;
     }
-    
-    [self.contentView layoutIfNeeded];
 }
 
 - (void) scrollToPageAtIndex:(NSInteger)index animated:(BOOL)animated {
@@ -133,17 +119,6 @@ typedef NS_ENUM(NSInteger, MXPanGestureDirection) {
 }
 
 #pragma mark Properties
-
-//- (UIView *)container {
-//    if (!_container) {
-//        _container = [[UIView alloc] init];
-//        [self.contentView addSubview:_container];
-//        
-//        _container.translatesAutoresizingMaskIntoConstraints = NO;
-//        [self updateContainerConstraints];
-//    }
-//    return _container;
-//}
 
 - (MXScrollView *)contentView {
     if (!_contentView) {
@@ -154,7 +129,6 @@ typedef NS_ENUM(NSInteger, MXPanGestureDirection) {
         _contentView.scrollEnabled = NO;
         [self addSubview:_contentView];
         
-        _contentView.translatesAutoresizingMaskIntoConstraints = NO;
         [self updateContentViewConstraints];
     }
     return _contentView;
@@ -170,7 +144,6 @@ typedef NS_ENUM(NSInteger, MXPanGestureDirection) {
         
         self.segmentedControlEdgeInsets = UIEdgeInsetsMake(0, 0, 0, 0);
         
-        self.segmentedControl.translatesAutoresizingMaskIntoConstraints = NO;
         [self updateSegmentedControlConstraints];
         
         _moveSegment = YES;
@@ -185,7 +158,6 @@ typedef NS_ENUM(NSInteger, MXPanGestureDirection) {
         _pager.dataSource = self;
         [self.contentView addSubview:_pager];
         
-        self.pager.translatesAutoresizingMaskIntoConstraints = NO;
         [self updatePagerConstraints];
     }
     return _pager;
@@ -195,16 +167,47 @@ typedef NS_ENUM(NSInteger, MXPanGestureDirection) {
     return self.pager.selectedPage;
 }
 
+- (CGFloat)segmentedControlHeight {
+    if (_segmentedControlHeight <= 0) {
+        _segmentedControlHeight = 44.f;
+    }
+    return _segmentedControlHeight;
+}
+
+- (void)setSegmentedControlHeight:(CGFloat)segmentedControlHeight {
+    _segmentedControlHeight = segmentedControlHeight;
+    
+    self.controlHeightConstraint.constant = segmentedControlHeight;
+    
+    CGFloat constant = segmentedControlHeight;
+    constant        += self.segmentedControlEdgeInsets.top;
+    constant        += self.segmentedControlEdgeInsets.bottom;
+    constant        /= 2;
+    self.pagerCenterYConstraint.constant = constant;
+    
+    [self.contentView layoutIfNeeded];
+    [self.pager layoutIfNeeded];
+}
+
 - (void)setSegmentedControlEdgeInsets:(UIEdgeInsets)segmentedControlEdgeInsets {
     _segmentedControlEdgeInsets = segmentedControlEdgeInsets;
     
     self.controlTopConstraint.constant      = segmentedControlEdgeInsets.top;
     self.controlLeadingConstraint.constant  = segmentedControlEdgeInsets.left;
-    self.controlTrailingConstraint.constant = segmentedControlEdgeInsets.right;
-    self.pagerBottomtConstraint.constant    = segmentedControlEdgeInsets.bottom;
+    self.controlTrailingConstraint.constant = -segmentedControlEdgeInsets.right;
+    self.pagerTopConstraint.constant        = segmentedControlEdgeInsets.bottom;
     
-    [self layoutIfNeeded];
-    [self.pager reloadData];
+    CGFloat constant = segmentedControlEdgeInsets.left - segmentedControlEdgeInsets.right;
+    self.controlCenterXConstraint.constant  = constant;
+    
+    constant = self.segmentedControlHeight;
+    constant += segmentedControlEdgeInsets.top;
+    constant += segmentedControlEdgeInsets.bottom;
+    constant /= 2;
+    self.pagerCenterYConstraint.constant = constant;
+    
+    [self.contentView layoutIfNeeded];
+    [self.pager layoutIfNeeded];
 }
 
 #pragma mark HMSegmentedControl target
@@ -260,6 +263,7 @@ typedef NS_ENUM(NSInteger, MXPanGestureDirection) {
 #pragma mark Content view constraints
 
 - (void) updateContentViewConstraints {
+    self.contentView.translatesAutoresizingMaskIntoConstraints = NO;
     
     [self addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[v]|"
                                                                  options:0
@@ -293,6 +297,7 @@ typedef NS_ENUM(NSInteger, MXPanGestureDirection) {
 #pragma mark Segmented-control constraints
 
 - (void) updateSegmentedControlConstraints {
+    self.segmentedControl.translatesAutoresizingMaskIntoConstraints = NO;
     
     [self.contentView addConstraint:self.controlTopConstraint];
     [self.contentView addConstraint:self.controlTrailingConstraint];
@@ -322,7 +327,7 @@ typedef NS_ENUM(NSInteger, MXPanGestureDirection) {
                                                                      toItem:self.contentView
                                                                   attribute:NSLayoutAttributeTrailing
                                                                  multiplier:1
-                                                                   constant:self.segmentedControlEdgeInsets.left];
+                                                                   constant:-self.segmentedControlEdgeInsets.right];
     }
     return _controlTrailingConstraint;
 }
@@ -335,7 +340,7 @@ typedef NS_ENUM(NSInteger, MXPanGestureDirection) {
                                                                     toItem:self.contentView
                                                                  attribute:NSLayoutAttributeLeading
                                                                 multiplier:1
-                                                                  constant:self.segmentedControlEdgeInsets.right];
+                                                                  constant:self.segmentedControlEdgeInsets.left];
     }
     return _controlLeadingConstraint;
 }
@@ -358,13 +363,15 @@ typedef NS_ENUM(NSInteger, MXPanGestureDirection) {
 
 - (NSLayoutConstraint *)controlCenterXConstraint {
     if (!_controlCenterXConstraint) {
+        
+        CGFloat constant = self.segmentedControlEdgeInsets.left - self.segmentedControlEdgeInsets.right;
         _controlCenterXConstraint = [NSLayoutConstraint constraintWithItem:self.segmentedControl
                                                                  attribute:NSLayoutAttributeCenterX
                                                                  relatedBy:NSLayoutRelationEqual
                                                                     toItem:self.contentView
                                                                  attribute:NSLayoutAttributeCenterX
                                                                 multiplier:1
-                                                                  constant:0];
+                                                                  constant:constant];
     }
     return _controlCenterXConstraint;
 }
@@ -385,15 +392,15 @@ typedef NS_ENUM(NSInteger, MXPanGestureDirection) {
 #pragma mark Pager constraints
 
 - (void)updatePagerConstraints {
+    self.pager.translatesAutoresizingMaskIntoConstraints = NO;
     
     [self.contentView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[v]|"
                                                                              options:0
                                                                              metrics:nil
                                                                                views:@{@"v" : self.pager}]];
-    
     [self.contentView addConstraint:self.pagerTopConstraint];
-    [self.contentView addConstraint:self.pagerBottomtConstraint];
     [self.contentView addConstraint:self.pagerCenterYConstraint];
+    [self.contentView addConstraint:self.pagerBottomtConstraint];
 }
 
 - (NSLayoutConstraint *)pagerTopConstraint {
@@ -424,13 +431,18 @@ typedef NS_ENUM(NSInteger, MXPanGestureDirection) {
 
 - (NSLayoutConstraint *)pagerCenterYConstraint {
     if (!_pagerCenterYConstraint) {
+        CGFloat constant = self.segmentedControlHeight;
+        constant += self.segmentedControlEdgeInsets.top;
+        constant += self.segmentedControlEdgeInsets.bottom;
+        constant /= 2;
+        
         _pagerCenterYConstraint = [NSLayoutConstraint constraintWithItem:self.pager
                                                                attribute:NSLayoutAttributeCenterY
                                                                relatedBy:NSLayoutRelationEqual
                                                                   toItem:self.contentView
                                                                attribute:NSLayoutAttributeCenterY
                                                               multiplier:1
-                                                                constant:(self.controlHeightConstraint.constant / 2)];
+                                                                constant:constant];
     }
     return _pagerCenterYConstraint;
 }
@@ -486,8 +498,6 @@ static NSString* const kContentOffsetKeyPath = @"contentOffset";
         self.showsVerticalScrollIndicator = NO;
         self.directionalLockEnabled = YES;
         self.bounces = YES;
-//        self.autoresizingMask = (UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight);
-//        self.contentMode = UIViewContentModeTopLeft;
         self.minimumHeigth = 0;
     }
     return self;
@@ -520,7 +530,7 @@ static NSString* const kContentOffsetKeyPath = @"contentOffset";
 
 #pragma mark <UIScrollViewDelegate>
 
-- (void)contentViewDidScroll:(UIScrollView *)scrollView {
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
     
     if ((self.contentOffset.y >= -self.minimumHeigth)) {
         self.contentOffset = CGPointMake(self.contentOffset.x, -self.minimumHeigth);
@@ -533,7 +543,7 @@ static NSString* const kContentOffsetKeyPath = @"contentOffset";
     }
 }
 
-- (void)contentViewDidEndDecelerating:(UIScrollView *)scrollView {
+- (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView {
     _lock = NO;
     [self removeObservedViews];
 }
@@ -622,7 +632,7 @@ static NSString* const kContentOffsetKeyPath = @"contentOffset";
                 [self contentView:self setContentOffset:old];
             }
         }
-        else if (_isObserving && [object isKindOfClass:[MXScrollView class]]) {
+        else if (_isObserving && [object isKindOfClass:[UIScrollView class]]) {
             
             //Adjust the observed contentView's content offset
             MXScrollView *scrollView = object;
