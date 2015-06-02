@@ -38,7 +38,6 @@ typedef NS_ENUM(NSInteger, MXPanGestureDirection) {
 @property (nonatomic, strong) NSMutableArray *observedViews;
 @end
 
-
 @interface MXSegmentedPager () <MXPagerViewDelegate, MXPagerViewDataSource>
 
 // Page count
@@ -200,18 +199,20 @@ typedef NS_ENUM(NSInteger, MXPanGestureDirection) {
     self.controlPositionYConstraint.constant= segmentedControlEdgeInsets.top;
     self.controlLeadingConstraint.constant  = segmentedControlEdgeInsets.left;
     self.controlTrailingConstraint.constant = -segmentedControlEdgeInsets.right;
+    [self.segmentedControl layoutIfNeeded];
     
     // Adjust pager's top constraint
-    self.pagerTopConstraint.constant        = segmentedControlEdgeInsets.bottom;
-    
-    [self.segmentedControl layoutIfNeeded];
-    [self.pager layoutIfNeeded];
+    if( self.segmentedControlPosition == MXSegmentedControlPositionTop) {
+        self.pagerTopConstraint.constant = segmentedControlEdgeInsets.bottom;
+        [self.pager layoutIfNeeded];
+    }
 }
 
 - (void)setSegmentedControlPosition:(MXSegmentedControlPosition)segmentedControlPosition {
     if (_segmentedControlPosition != segmentedControlPosition) {
         _segmentedControlPosition = segmentedControlPosition;
         
+        // Update constraints by removing all and recreate
         [self clearPagerConstraints];
         [self clearSegmentedControlConstraints];
         [self clearContentViewConstraints];
@@ -363,7 +364,7 @@ typedef NS_ENUM(NSInteger, MXPanGestureDirection) {
         CGFloat constant = (self.segmentedControlPosition == MXSegmentedControlPositionTop)? -self.minimumHeaderHeight / 2 : 0;
         _contentCenterYConstraint = [NSLayoutConstraint constraintWithItem:self.contentView
                                                                  attribute:NSLayoutAttributeCenterY
-                                                                 relatedBy:NSLayoutRelationEqual
+                                                                 relatedBy:NSLayoutRelationGreaterThanOrEqual
                                                                     toItem:self.scrollView
                                                                  attribute:NSLayoutAttributeCenterY
                                                                 multiplier:1
@@ -423,7 +424,7 @@ typedef NS_ENUM(NSInteger, MXPanGestureDirection) {
         id toItem = (self.segmentedControlPosition == MXSegmentedControlPositionTop)? self.contentView : self;
         _controlTrailingConstraint = [NSLayoutConstraint constraintWithItem:self.segmentedControl
                                                                   attribute:NSLayoutAttributeTrailing
-                                                                  relatedBy:NSLayoutRelationEqual
+                                                                  relatedBy:NSLayoutRelationGreaterThanOrEqual
                                                                      toItem:toItem
                                                                   attribute:NSLayoutAttributeTrailing
                                                                  multiplier:1
@@ -437,7 +438,7 @@ typedef NS_ENUM(NSInteger, MXPanGestureDirection) {
         id toItem = (self.segmentedControlPosition == MXSegmentedControlPositionTop)? self.contentView : self;
         _controlLeadingConstraint = [NSLayoutConstraint constraintWithItem:self.segmentedControl
                                                                  attribute:NSLayoutAttributeLeading
-                                                                 relatedBy:NSLayoutRelationEqual
+                                                                 relatedBy:NSLayoutRelationLessThanOrEqual
                                                                     toItem:toItem
                                                                  attribute:NSLayoutAttributeLeading
                                                                 multiplier:1
@@ -450,20 +451,11 @@ typedef NS_ENUM(NSInteger, MXPanGestureDirection) {
     if (!_controlHeightConstraint) {
         _controlHeightConstraint = [NSLayoutConstraint constraintWithItem:self.segmentedControl
                                                                 attribute:NSLayoutAttributeHeight
-                                                                relatedBy:NSLayoutRelationEqual
+                                                                relatedBy:NSLayoutRelationLessThanOrEqual
                                                                    toItem:nil
                                                                 attribute:NSLayoutAttributeNotAnAttribute
                                                                multiplier:1
                                                                  constant:self.segmentedControlHeight];
-        
-        self.translatesAutoresizingMaskIntoConstraints = NO;
-        [self addConstraint:[NSLayoutConstraint constraintWithItem:self
-                                                         attribute:NSLayoutAttributeHeight
-                                                         relatedBy:NSLayoutRelationGreaterThanOrEqual
-                                                            toItem:self.segmentedControl
-                                                         attribute:NSLayoutAttributeHeight
-                                                        multiplier:1
-                                                          constant:0]];
     }
     return _controlHeightConstraint;
 }
@@ -549,9 +541,13 @@ typedef NS_ENUM(NSInteger, MXPanGestureDirection) {
 }
 
 - (void)setMinimumHeaderHeight:(CGFloat)minimumHeaderHeight {
-    self.contentCenterYConstraint.constant = -minimumHeaderHeight / 2;
+    
     self.scrollView.minimumHeigth = minimumHeaderHeight;
-    [self.contentView layoutIfNeeded];
+    
+    if (self.segmentedControlPosition == MXSegmentedControlPositionTop) {
+        self.contentCenterYConstraint.constant = -minimumHeaderHeight / 2;
+        [self.contentView layoutIfNeeded];
+    }
 }
 
 - (MXProgressBlock)progressBlock {
