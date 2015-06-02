@@ -61,6 +61,7 @@ typedef NS_ENUM(NSInteger, MXPanGestureDirection) {
 @property (nonatomic, strong) NSLayoutConstraint *scrollBottomConstraint;
 
 @property (nonatomic, strong) NSLayoutConstraint *contentCenterYConstraint;
+@property (nonatomic, strong) NSLayoutConstraint *contentHeightConstraint;
 
 @end
 
@@ -188,8 +189,6 @@ typedef NS_ENUM(NSInteger, MXPanGestureDirection) {
     
     // Adjust the segmented-control's height constraint
     self.controlHeightConstraint.constant = segmentedControlHeight;
-    
-    [self.segmentedControl layoutIfNeeded];
 }
 
 - (void)setSegmentedControlEdgeInsets:(UIEdgeInsets)segmentedControlEdgeInsets {
@@ -199,12 +198,10 @@ typedef NS_ENUM(NSInteger, MXPanGestureDirection) {
     self.controlPositionYConstraint.constant= segmentedControlEdgeInsets.top;
     self.controlLeadingConstraint.constant  = segmentedControlEdgeInsets.left;
     self.controlTrailingConstraint.constant = -segmentedControlEdgeInsets.right;
-    [self.segmentedControl layoutIfNeeded];
     
     // Adjust pager's top constraint
     if( self.segmentedControlPosition == MXSegmentedControlPositionTop) {
         self.pagerTopConstraint.constant = segmentedControlEdgeInsets.bottom;
-        [self.pager layoutIfNeeded];
     }
 }
 
@@ -349,28 +346,49 @@ typedef NS_ENUM(NSInteger, MXPanGestureDirection) {
                                                                 attribute:NSLayoutAttributeCenterX
                                                                multiplier:1
                                                                  constant:0]];
+    [self.scrollView addConstraint:self.contentHeightConstraint];
     
     [self.scrollView addConstraint:self.contentCenterYConstraint];
 }
 
 - (void) clearContentViewConstraints {
-    self.contentCenterYConstraint = nil;
+    self.contentCenterYConstraint   = nil;
+    self.contentHeightConstraint    = nil;
     [self.contentView removeFromSuperview];
     [self.scrollView addSubview:self.contentView];
 }
 
 - (NSLayoutConstraint *)contentCenterYConstraint {
     if (!_contentCenterYConstraint) {
-        CGFloat constant = (self.segmentedControlPosition == MXSegmentedControlPositionTop)? -self.minimumHeaderHeight / 2 : 0;
         _contentCenterYConstraint = [NSLayoutConstraint constraintWithItem:self.contentView
                                                                  attribute:NSLayoutAttributeCenterY
                                                                  relatedBy:NSLayoutRelationGreaterThanOrEqual
                                                                     toItem:self.scrollView
                                                                  attribute:NSLayoutAttributeCenterY
                                                                 multiplier:1
-                                                                  constant:constant];
+                                                                  constant:-self.minimumHeaderHeight / 2];
     }
     return _contentCenterYConstraint;
+}
+
+- (NSLayoutConstraint *)contentHeightConstraint {
+    if (!_contentHeightConstraint) {
+        CGFloat constant            = 0;
+        NSLayoutRelation relation   = NSLayoutRelationLessThanOrEqual;
+        
+        if (self.segmentedControlPosition == MXSegmentedControlPositionBottom) {
+            constant = -self.minimumHeaderHeight;
+            relation = NSLayoutRelationGreaterThanOrEqual;
+        }
+        _contentHeightConstraint = [NSLayoutConstraint constraintWithItem:self.contentView
+                                                                attribute:NSLayoutAttributeHeight
+                                                                relatedBy:relation
+                                                                   toItem:self.scrollView
+                                                                attribute:NSLayoutAttributeHeight
+                                                               multiplier:1
+                                                                 constant:constant];
+    }
+    return _contentHeightConstraint;
 }
 
 #pragma mark Segmented-control constraints
@@ -386,7 +404,7 @@ typedef NS_ENUM(NSInteger, MXPanGestureDirection) {
 }
 
 - (void) clearSegmentedControlConstraints {
-    self.controlPositionYConstraint       = nil;
+    self.controlPositionYConstraint = nil;
     self.controlTrailingConstraint  = nil;
     self.controlLeadingConstraint   = nil;
     self.controlHeightConstraint    = nil;
@@ -401,20 +419,22 @@ typedef NS_ENUM(NSInteger, MXPanGestureDirection) {
         id toItem                   = self.contentView;
         NSLayoutAttribute attribute = NSLayoutAttributeTop;
         CGFloat constant            = self.segmentedControlEdgeInsets.top;
+        NSLayoutRelation relation   = NSLayoutRelationLessThanOrEqual;
         
         if (self.segmentedControlPosition == MXSegmentedControlPositionBottom) {
             toItem      = self;
             attribute   = NSLayoutAttributeBottom;
-            constant    = self.segmentedControlEdgeInsets.bottom;
+            constant    = -self.segmentedControlEdgeInsets.bottom;
+            relation   = NSLayoutRelationGreaterThanOrEqual;
         }
         
         _controlPositionYConstraint = [NSLayoutConstraint constraintWithItem:self.segmentedControl
-                                                             attribute:attribute
-                                                             relatedBy:NSLayoutRelationEqual
-                                                                toItem:toItem
-                                                             attribute:attribute
-                                                            multiplier:1
-                                                              constant:constant];
+                                                                   attribute:attribute
+                                                                   relatedBy:relation
+                                                                      toItem:toItem
+                                                                   attribute:attribute
+                                                                  multiplier:1
+                                                                    constant:constant];
     }
     return _controlPositionYConstraint;
 }
@@ -479,14 +499,6 @@ typedef NS_ENUM(NSInteger, MXPanGestureDirection) {
                                                                  attribute:NSLayoutAttributeBottom
                                                                 multiplier:1
                                                                     constant:0]];
-    
-    [self.scrollView addConstraint:[NSLayoutConstraint constraintWithItem:self.scrollView
-                                                                attribute:NSLayoutAttributeBottom
-                                                                relatedBy:NSLayoutRelationEqual
-                                                                   toItem:self.pager
-                                                                attribute:NSLayoutAttributeBottom
-                                                               multiplier:1
-                                                                 constant:0]];
 }
 
 - (void) clearPagerConstraints {
@@ -541,12 +553,11 @@ typedef NS_ENUM(NSInteger, MXPanGestureDirection) {
 }
 
 - (void)setMinimumHeaderHeight:(CGFloat)minimumHeaderHeight {
-    
     self.scrollView.minimumHeigth = minimumHeaderHeight;
     
-    if (self.segmentedControlPosition == MXSegmentedControlPositionTop) {
-        self.contentCenterYConstraint.constant = -minimumHeaderHeight / 2;
-        [self.contentView layoutIfNeeded];
+    self.contentCenterYConstraint.constant = -minimumHeaderHeight / 2;
+    if (self.segmentedControlPosition == MXSegmentedControlPositionBottom) {
+        self.contentHeightConstraint.constant = -minimumHeaderHeight;
     }
 }
 
