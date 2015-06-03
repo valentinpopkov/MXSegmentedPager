@@ -76,8 +76,11 @@ typedef NS_ENUM(NSInteger, MXPanGestureDirection) {
     [self reloadData];
     
     [self.scrollView layoutIfNeeded];
+    [self.contentView layoutIfNeeded];
     [self.segmentedControl layoutIfNeeded];
     [self.pager layoutIfNeeded];
+    
+    [self layoutIfNeeded];
 }
 
 - (void)reloadData {
@@ -195,13 +198,17 @@ typedef NS_ENUM(NSInteger, MXPanGestureDirection) {
     _segmentedControlEdgeInsets = segmentedControlEdgeInsets;
     
     // Adjust segmented-contol's constraints
-    self.controlPositionYConstraint.constant= segmentedControlEdgeInsets.top;
     self.controlLeadingConstraint.constant  = segmentedControlEdgeInsets.left;
     self.controlTrailingConstraint.constant = -segmentedControlEdgeInsets.right;
     
-    // Adjust pager's top constraint
+    // Adjust constraints depending on the control position
     if( self.segmentedControlPosition == MXSegmentedControlPositionTop) {
+        self.controlPositionYConstraint.constant = segmentedControlEdgeInsets.top;
         self.pagerTopConstraint.constant = segmentedControlEdgeInsets.bottom;
+    }
+    else {
+        self.controlPositionYConstraint.constant = -segmentedControlEdgeInsets.bottom;
+        self.scrollBottomConstraint.constant = -segmentedControlEdgeInsets.top;
     }
 }
 
@@ -425,7 +432,7 @@ typedef NS_ENUM(NSInteger, MXPanGestureDirection) {
             toItem      = self;
             attribute   = NSLayoutAttributeBottom;
             constant    = -self.segmentedControlEdgeInsets.bottom;
-            relation   = NSLayoutRelationGreaterThanOrEqual;
+            relation    = NSLayoutRelationGreaterThanOrEqual;
         }
         
         _controlPositionYConstraint = [NSLayoutConstraint constraintWithItem:self.segmentedControl
