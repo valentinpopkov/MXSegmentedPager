@@ -71,13 +71,11 @@ typedef NS_ENUM(NSInteger, MXPanGestureDirection) {
 
 @synthesize segmentedControlHeight = _segmentedControlHeight;
 
-- (void)layoutSubviews {
+- (void)layoutSubviews{
+    if (self.count <= 0) {
+        [self reloadData];
+    }
     [super layoutSubviews];
-    [self reloadData];
-    
-    [self.scrollView layoutIfNeeded];
-    [self.segmentedControl layoutIfNeeded];
-    [self.pager layoutIfNeeded];
 }
 
 - (void)reloadData {
@@ -195,13 +193,17 @@ typedef NS_ENUM(NSInteger, MXPanGestureDirection) {
     _segmentedControlEdgeInsets = segmentedControlEdgeInsets;
     
     // Adjust segmented-contol's constraints
-    self.controlPositionYConstraint.constant= segmentedControlEdgeInsets.top;
     self.controlLeadingConstraint.constant  = segmentedControlEdgeInsets.left;
     self.controlTrailingConstraint.constant = -segmentedControlEdgeInsets.right;
     
     // Adjust pager's top constraint
     if( self.segmentedControlPosition == MXSegmentedControlPositionTop) {
+        self.controlPositionYConstraint.constant = segmentedControlEdgeInsets.top;
         self.pagerTopConstraint.constant = segmentedControlEdgeInsets.bottom;
+    }
+    else {
+        self.scrollBottomConstraint.constant = -segmentedControlEdgeInsets.top;
+        self.controlPositionYConstraint.constant = -segmentedControlEdgeInsets.bottom;
     }
 }
 
