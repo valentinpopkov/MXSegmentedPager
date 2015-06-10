@@ -82,8 +82,15 @@ static void * const kMXPagerViewKVOContext = (void*)&kMXPagerViewKVOContext;
     return self;
 }
 
+- (void)layoutSubviews{
+    if (self.count <= 0) {
+        [self reloadData];
+    }
+    [super layoutSubviews];
+}
+
 - (void)layoutIfNeeded {
-    [self reloadData];
+    
     [super layoutIfNeeded];
 }
 
@@ -103,8 +110,6 @@ static void * const kMXPagerViewKVOContext = (void*)&kMXPagerViewKVOContext;
     
     //Loads the current selected page
     [self loadPageAtIndex:self.index];
-    
-//    self.contentSize = CGSizeMake(self.bounds.size.width * self.count, self.bounds.size.height);
 }
 
 - (void) showPageAtIndex:(NSInteger)index animated:(BOOL)animated {
@@ -312,20 +317,39 @@ static void * const kMXPagerViewKVOContext = (void*)&kMXPagerViewKVOContext;
             if ([self.dataSource respondsToSelector:@selector(pagerView:viewForPageAtIndex:)]) {
                 
                 UIView *page = [self.dataSource pagerView:self viewForPageAtIndex:index];
-                page.frame = (CGRect) {
-                    .origin.x   = self.bounds.size.width * index,
-                    .origin.y   = 0.f,
-                    .size       = self.bounds.size
-                };
+                
                 [self.contentView addSubview:page];
                 [self.pages setObject:page forKey:key];
+                
+                page.translatesAutoresizingMaskIntoConstraints = NO;
+                [self.contentView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[v]|"
+                                                                                         options:0
+                                                                                         metrics:nil
+                                                                                           views:@{@"v" : page}]];
+                
+                CGFloat multipler = 1 / (CGFloat) self.count;
+                [self.contentView addConstraint:[NSLayoutConstraint constraintWithItem:page
+                                                                             attribute:NSLayoutAttributeWidth
+                                                                             relatedBy:NSLayoutRelationEqual
+                                                                                toItem:self.contentView
+                                                                             attribute:NSLayoutAttributeWidth
+                                                                            multiplier:multipler
+                                                                              constant:0]];
+                multipler *= (2 * index + 1);
+                [self.contentView addConstraint:[NSLayoutConstraint constraintWithItem:page
+                                                                             attribute:NSLayoutAttributeCenterX
+                                                                             relatedBy:NSLayoutRelationEqual
+                                                                                toItem:self.contentView
+                                                                             attribute:NSLayoutAttributeCenterX
+                                                                            multiplier:multipler
+                                                                              constant:0]];
             }
         }
     };
     
     loadPage(index);
     
-    //In  case of slide behavior, its loads the neighbors as well.
+    //In case of scroll transition style, it loads the neighbors as well.
     if (self.transitionStyle == MXPagerViewTransitionStyleScroll) {
         loadPage(index - 1);
         loadPage(index + 1);
@@ -341,7 +365,7 @@ static void * const kMXPagerViewKVOContext = (void*)&kMXPagerViewKVOContext;
         
         if (index != self.index) {
             
-            //In case if slide behavior, it keeps the neighbors, otherwise it unloads all hidden pages.
+            //In case of scroll transition style, it keeps the neighbors, otherwise it unloads all hidden pages.
             if ((self.transitionStyle == MXPagerViewTransitionStyleTab) ||
                 ( (index != self.index-1) && (index != self.index+1) )) {
                 
@@ -378,7 +402,8 @@ static void * const kMXPagerViewKVOContext = (void*)&kMXPagerViewKVOContext;
 }
 
 - (void)dealloc {
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    [self removeObserver:self forKeyPath:NSStringFromSelector(@selector(contentOffset)) context:kMXPagerViewKVOContext];
+    [self removeObserver:self forKeyPath:NSStringFromSelector(@selector(contentSize)) context:kMXPagerViewKVOContext];
 }
 
 @end

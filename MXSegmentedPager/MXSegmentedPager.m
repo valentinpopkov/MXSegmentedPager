@@ -71,7 +71,10 @@ typedef NS_ENUM(NSInteger, MXPanGestureDirection) {
 
 @synthesize segmentedControlHeight = _segmentedControlHeight;
 
-- (void)layoutSubviews {
+- (void)layoutSubviews{
+    if (self.count <= 0) {
+        [self reloadData];
+    }
     [super layoutSubviews];
     [self reloadData];
     
