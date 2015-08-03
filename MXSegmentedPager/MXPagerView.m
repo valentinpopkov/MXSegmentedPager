@@ -70,13 +70,6 @@ static void * const kMXPagerViewKVOContext = (void*)&kMXPagerViewKVOContext;
     return self;
 }
 
-- (instancetype)initWithFrame:(CGRect)frame {
-    if (self = [super initWithFrame:frame]) {
-        [self initialization];
-    }
-    return self;
-}
-
 - (void) initialization {
     self.scrollsToTop = NO;
     self.pagingEnabled = YES;
