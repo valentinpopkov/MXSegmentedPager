@@ -144,7 +144,7 @@ typedef void (^MXProgressBlock) (CGFloat progress);
 @property (nonatomic, assign) id<MXSegmentedPagerDataSource> dataSource;
 
 /**
- The segmented control. @see [HMSegmentedControl](http://cocoadocs.org/docsets/HMSegmentedControl/1.5/) for customazation.
+ The segmented control. @see [HMSegmentedControl](http://cocoadocs.org/docsets/HMSegmentedControl/1.5.2/) for customazation.
  */
 @property (nonatomic, readonly) HMSegmentedControl* segmentedControl;
 

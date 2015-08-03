@@ -76,14 +76,6 @@ typedef NS_ENUM(NSInteger, MXPanGestureDirection) {
         [self reloadData];
     }
     [super layoutSubviews];
-    [self reloadData];
-    
-    [self.scrollView layoutIfNeeded];
-    [self.contentView layoutIfNeeded];
-    [self.segmentedControl layoutIfNeeded];
-    [self.pager layoutIfNeeded];
-    
-    [self layoutIfNeeded];
 }
 
 - (void)reloadData {
@@ -157,8 +149,6 @@ typedef NS_ENUM(NSInteger, MXPanGestureDirection) {
         
         UIView *superView = (self.segmentedControlPosition == MXSegmentedControlPositionTop)? self.contentView : self;
         [superView addSubview:self.segmentedControl];
-        
-        self.segmentedControlEdgeInsets = UIEdgeInsetsMake(0, 0, 0, 0);
         
         [self addSegmentedControlConstraints];
         
@@ -518,7 +508,7 @@ typedef NS_ENUM(NSInteger, MXPanGestureDirection) {
 }
 
 - (NSLayoutConstraint *)pagerTopConstraint {
-    if (!_pagerTopConstraint) {
+    if (!_pagerTopConstraint && self.pager) {
         
         id toItem                   = self.segmentedControl;
         NSLayoutAttribute attribute = NSLayoutAttributeBottom;
@@ -549,7 +539,7 @@ typedef NS_ENUM(NSInteger, MXPanGestureDirection) {
 - (void)setParallaxHeaderView:(UIView *)view mode:(VGParallaxHeaderMode)mode height:(CGFloat)height {
     [self.scrollView setParallaxHeaderView:view mode:mode height:height];
     
-    self.scrollView.scrollEnabled = view;
+    self.scrollView.scrollEnabled = !!view;
 }
 
 - (VGParallaxHeader *)parallaxHeader {
@@ -692,26 +682,36 @@ static NSString* const kContentOffsetKeyPath = @"contentOffset";
 
 #pragma mark KVO
 
-- (void) addObserverToView:(UIView *)view {
-    _isObserving = NO;
-    if ([view isKindOfClass:[UIScrollView class]]) {
-        [view addObserver:self
-               forKeyPath:kContentOffsetKeyPath
-                  options:NSKeyValueObservingOptionOld|NSKeyValueObservingOptionNew
-                  context:kMXScrollViewKVOContext];
+- (void) addObservedView:(UIView *)view {
+    if (![self.observedViews containsObject:view]) {
+        _isObserving = NO;
+        
+        [self.observedViews addObject:view];
+        
+        if ([view isKindOfClass:[UIScrollView class]]) {
+            [view addObserver:self
+                   forKeyPath:kContentOffsetKeyPath
+                      options:NSKeyValueObservingOptionOld|NSKeyValueObservingOptionNew
+                      context:kMXScrollViewKVOContext];
+        }
+        _isObserving = YES;
     }
-    _isObserving = YES;
 }
 
-- (void) removeObserverFromView:(UIView *)view {
-    @try {
-        if ([view isKindOfClass:[UIScrollView class]]) {
-            [view removeObserver:self
-                      forKeyPath:kContentOffsetKeyPath
-                         context:kMXScrollViewKVOContext];
+- (void) removeObservedViews {
+    for (UIView *view in self.observedViews) {
+        
+        @try {
+            if ([view isKindOfClass:[UIScrollView class]]) {
+                [view removeObserver:self
+                          forKeyPath:kContentOffsetKeyPath
+                             context:kMXScrollViewKVOContext];
+            }
         }
+        @catch (NSException *exception) {}
+        
     }
-    @catch (NSException *exception) {}
+    [self.observedViews removeAllObjects];
 }
 
 //This is where the magic happens...
@@ -752,20 +752,6 @@ static NSString* const kContentOffsetKeyPath = @"contentOffset";
 }
 
 #pragma mark Scrolling views handlers
-
-- (void) addObservedView:(UIView *)view {
-    if (![self.observedViews containsObject:view]) {
-        [self.observedViews addObject:view];
-        [self addObserverToView:view];
-    }
-}
-
-- (void) removeObservedViews {
-    for (UIView *view in self.observedViews) {
-        [self removeObserverFromView:view];
-    }
-    [self.observedViews removeAllObjects];
-}
 
 - (void) contentView:(UIScrollView*)contentView setContentOffset:(CGPoint)offset {
     _isObserving = NO;

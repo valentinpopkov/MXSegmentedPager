@@ -57,29 +57,45 @@ static void * const kMXPagerViewKVOContext = (void*)&kMXPagerViewKVOContext;
 @dynamic delegate;
 
 - (instancetype)init {
-    self = [super init];
-    if (self) {
-
-        self.scrollsToTop = NO;
-        self.pagingEnabled = YES;
-        self.directionalLockEnabled = YES;
-        self.alwaysBounceVertical = NO;
-        self.alwaysBounceHorizontal = NO;
-        self.showsVerticalScrollIndicator = NO;
-        self.showsHorizontalScrollIndicator = NO;
-        self.keyboardDismissMode = UIScrollViewKeyboardDismissModeOnDrag;
-        self.transitionStyle = MXPagerViewTransitionStyleScroll;
-        
-        self.index = 0;
-        [self addObserver:self forKeyPath:NSStringFromSelector(@selector(contentOffset))
-                  options:NSKeyValueObservingOptionNew|NSKeyValueObservingOptionOld
-                  context:kMXPagerViewKVOContext];
-        
-        [self addObserver:self forKeyPath:NSStringFromSelector(@selector(contentSize))
-                  options:0
-                  context:kMXPagerViewKVOContext];
+    if (self = [super init]) {
+        [self initialization];
     }
     return self;
+}
+
+- (id)initWithCoder:(NSCoder *)aDecoder {
+    if (self = [super initWithCoder:aDecoder]) {
+        [self initialization];
+    }
+    return self;
+}
+
+- (instancetype)initWithFrame:(CGRect)frame {
+    if (self = [super initWithFrame:frame]) {
+        [self initialization];
+    }
+    return self;
+}
+
+- (void) initialization {
+    self.scrollsToTop = NO;
+    self.pagingEnabled = YES;
+    self.directionalLockEnabled = YES;
+    self.alwaysBounceVertical = NO;
+    self.alwaysBounceHorizontal = NO;
+    self.showsVerticalScrollIndicator = NO;
+    self.showsHorizontalScrollIndicator = NO;
+    self.keyboardDismissMode = UIScrollViewKeyboardDismissModeOnDrag;
+    self.transitionStyle = MXPagerViewTransitionStyleScroll;
+    
+    self.index = 0;
+    [self addObserver:self forKeyPath:NSStringFromSelector(@selector(contentOffset))
+              options:NSKeyValueObservingOptionNew|NSKeyValueObservingOptionOld
+              context:kMXPagerViewKVOContext];
+    
+    [self addObserver:self forKeyPath:NSStringFromSelector(@selector(contentSize))
+              options:0
+              context:kMXPagerViewKVOContext];
 }
 
 - (void)layoutSubviews{
@@ -87,11 +103,6 @@ static void * const kMXPagerViewKVOContext = (void*)&kMXPagerViewKVOContext;
         [self reloadData];
     }
     [super layoutSubviews];
-}
-
-- (void)layoutIfNeeded {
-    
-    [super layoutIfNeeded];
 }
 
 - (void) reloadData {
