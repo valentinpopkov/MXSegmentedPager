@@ -87,8 +87,11 @@
 }
 
 - (void)scrollToTopAnimated:(BOOL)animated {
-    [_contentView setContentOffset:CGPointMake(0, -self.contentView.parallaxHeader.height)
-                          animated:animated];
+    [self scrollToPosition:CGPointMake(0, -self.contentView.parallaxHeader.height) animated:animated];
+}
+
+- (void)scrollToPosition:(CGPoint)position animated:(BOOL)animated {
+    [_contentView setContentOffset:position animated:animated];
 }
 
 #pragma mark Layout

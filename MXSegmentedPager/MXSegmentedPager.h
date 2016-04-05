@@ -231,6 +231,11 @@ typedef void (^MXProgressBlock) (CGFloat progress);
  */
 - (void) scrollToTopAnimated:(BOOL)animated;
 
+/**
+ Scrolls the main contentView to the position
+ */
+- (void) scrollToPosition:(CGPoint)position animated:(BOOL)animated;
+
 @end
 
 /**
