@@ -254,6 +254,11 @@ typedef void (^MXProgressBlock) (CGFloat progress);
 @property (nonatomic) BOOL bounces;
 
 /**
+ Allows pager bounces. Default YES.
+ */
+@property (nonatomic) BOOL pagerBounces;
+
+/**
  The progress block called when scroll is progressing.
  */
 @property (nonatomic, strong, nullable) MXProgressBlock progressBlock DEPRECATED_MSG_ATTRIBUTE("Use the delegate method 'segmentedPager:didScrollWithParallaxHeader:' instead.");

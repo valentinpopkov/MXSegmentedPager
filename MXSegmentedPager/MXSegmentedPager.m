@@ -307,6 +307,14 @@
     self.contentView.bounces = bounces;
 }
 
+- (BOOL)pagerBounces {
+    return self.pager.contentView.bounces;
+}
+
+- (void)setPagerBounces:(BOOL)bounces {
+    self.pager.contentView.bounces = bounces;
+}
+
 - (MXParallaxHeader *)parallaxHeader {
     return self.contentView.parallaxHeader;
 }
